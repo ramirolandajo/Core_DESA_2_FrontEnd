@@ -1,12 +1,13 @@
-import MessageTable from "./components/MessageTable";
+import NavBar from "./components/NavBar";
+import AppRoutes from "./routes/Routes";
+import AliveScreen from "./screens/AliveScreen";
 
 export default function App() {
   return (
-    <div className="min-h-screen min-w-screen bg-gray-100 flex justify-center items-center">
-      <main>
-        <MessageTable />
-      </main>
-    </div>
+    <>
+      <NavBar />
+      <AppRoutes />
+    </>
   );
 }
 
