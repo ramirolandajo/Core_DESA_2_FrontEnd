@@ -8,7 +8,7 @@ export default function TableComponent({ endpoint }) {
   const [selectedPayload, setSelectedPayload] = useState(null); // 👈 nuevo estado
 
   const fetchData = async (endpoint) => {
-    const res = await api.get(`/api/core/${endpoint}`);
+    const res = await api.get(`/core/${endpoint}`);
     console.log(res.data);
     setAllData(res.data);
     setData([]);
