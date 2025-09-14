@@ -3,13 +3,16 @@ import api from "../api/api";
 import PayloadModal from "./PayloadModal";
 
 export default function TableComponent({ endpoint }) {
-  const [data, setData] = useState([]); 
-  const [allData, setAllData] = useState([]); 
-  const [selectedPayload, setSelectedPayload] = useState(null); // 👈 nuevo estado
+  const [data, setData] = useState([]);
+  const [allData, setAllData] = useState([]);
+  const [selectedPayload, setSelectedPayload] = useState(null);
+
+  // 🔎 estados para búsqueda y filtro
+  const [search, setSearch] = useState("");
+  const [filterType, setFilterType] = useState("all");
 
   const fetchData = async (endpoint) => {
     const res = await api.get(`/core/${endpoint}`);
-    console.log(res.data);
     setAllData(res.data);
     setData([]);
   };
@@ -40,7 +43,6 @@ export default function TableComponent({ endpoint }) {
     };
 
     startInterval();
-
     return () => clearInterval(intervalId);
   }, [allData]);
 
@@ -54,8 +56,53 @@ export default function TableComponent({ endpoint }) {
     return `${dd}/${mm}/${yy} ${hh}:${min}`;
   };
 
+  // 📌 obtener los tipos únicos para el filtro
+  const uniqueTypes = [...new Set(allData.map((item) => item.type.split(":")[0].trim()))];
+
+  // 📌 aplicar búsqueda y filtro
+  const filteredData = data.filter((item) => {
+    const [method, description] = item.type.split(":").map((s) => s.trim());
+
+    // filtro por type
+    if (filterType !== "all" && method !== filterType) return false;
+
+    // búsqueda en campos
+    const searchLower = search.toLowerCase();
+    return (
+      item.eventId.toString().includes(searchLower) ||
+      method.toLowerCase().includes(searchLower) ||
+      description.toLowerCase().includes(searchLower) ||
+      item.originModule?.toLowerCase().includes(searchLower) ||
+      item.payload?.toLowerCase().includes(searchLower)
+    );
+  });
+
   return (
-    <div className="w-full h-[90vh] overflow-y-auto rounded-2xl">
+    <div className="w-full h-[90vh] overflow-y-auto rounded-2xl p-4">
+      {/* 🔎 Barra de búsqueda y filtro */}
+      <div className="flex items-center gap-4 mb-4">
+        <input
+          type="text"
+          placeholder="Buscar..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="flex-1 p-2 rounded-lg bg-[#2d2d2d] text-white"
+        />
+        <select
+          value={filterType}
+          onChange={(e) => setFilterType(e.target.value)}
+          className="p-2 rounded-lg bg-[#2d2d2d] text-white"
+        >
+          <option value="all">Todos</option>
+          {uniqueTypes.map((type) => (
+            <option key={type} value={type}>
+              {type}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* 📋 Tabla */}
       <table className="w-full text-sm text-left text-gray-300">
         <thead className="sticky top-0 bg-[#2d2d2d] text-white uppercase text-xs">
           <tr>
@@ -68,7 +115,7 @@ export default function TableComponent({ endpoint }) {
           </tr>
         </thead>
         <tbody>
-          {data.slice().reverse().map((item) => {
+          {filteredData.slice().reverse().map((item) => {
             const [method, description] = item.type.split(":").map((s) => s.trim());
             return (
               <tr
@@ -80,7 +127,7 @@ export default function TableComponent({ endpoint }) {
                 <td className="px-4 py-2">{description}</td>
                 <td
                   className="px-4 py-2 max-w-xs truncate break-words overflow-hidden cursor-pointer hover:underline"
-                  onClick={() => setSelectedPayload(item.payload)} // 👈 abre modal
+                  onClick={() => setSelectedPayload(item.payload)}
                 >
                   {item.payload}
                 </td>
