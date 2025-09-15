@@ -132,7 +132,7 @@ export default function TableComponent({ endpoint }) {
                   {item.payload}
                 </td>
                 <td className="px-4 py-2">{item.originModule}</td>
-                <td className="px-4 py-2">{formatDate(item.timestamp)}</td>
+                <td className="px-4 py-2">{formatDate(item.timestamp || item.movedAt)}</td>
               </tr>
             );
           })}
