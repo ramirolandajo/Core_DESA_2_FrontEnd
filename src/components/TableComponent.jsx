@@ -1,50 +1,34 @@
 import React, { useEffect, useState } from "react";
 import api from "../api/api";
 import PayloadModal from "./PayloadModal";
+import FilterModal from "./FilterModal";
+import { Filter } from "lucide-react"; // ícono de filtro
 
 export default function TableComponent({ endpoint }) {
   const [data, setData] = useState([]);
   const [allData, setAllData] = useState([]);
   const [selectedPayload, setSelectedPayload] = useState(null);
 
-  // 🔎 estados para búsqueda y filtro
+  // 🔎 estados para búsqueda y filtros
   const [search, setSearch] = useState("");
-  const [filterType, setFilterType] = useState("all");
+  const [filters, setFilters] = useState({
+    fromDate: "",
+    toDate: "",
+    modules: [],
+    types: [],
+  });
+  const [showFilterModal, setShowFilterModal] = useState(false);
 
   const fetchData = async (endpoint) => {
     const res = await api.get(`/core/${endpoint}`);
+    console.log(res.data)
     setAllData(res.data);
-    setData([]);
+    setData(res.data);
   };
 
   useEffect(() => {
     fetchData(endpoint);
   }, [endpoint]);
-
-  useEffect(() => {
-    if (allData.length === 0) return;
-
-    let index = -1;
-    let intervalId;
-
-    const startInterval = () => {
-      const randomTime = Math.floor(Math.random() * 2000) + 1000;
-
-      intervalId = setInterval(() => {
-        if (index < allData.length - 1) {
-          setData((prev) => [...prev, allData[index]]);
-          index++;
-          clearInterval(intervalId);
-          startInterval();
-        } else {
-          clearInterval(intervalId);
-        }
-      }, randomTime);
-    };
-
-    startInterval();
-    return () => clearInterval(intervalId);
-  }, [allData]);
 
   const formatDate = (timestamp) => {
     const date = new Date(timestamp);
@@ -56,30 +40,36 @@ export default function TableComponent({ endpoint }) {
     return `${dd}/${mm}/${yy} ${hh}:${min}`;
   };
 
-  // 📌 obtener los tipos únicos para el filtro
+  // 📌 obtener listas únicas
   const uniqueTypes = [...new Set(allData.map((item) => item.type.split(":")[0].trim()))];
+  const uniqueModules = [...new Set(allData.map((item) => item.originModule))];
 
-  // 📌 aplicar búsqueda y filtro
+  // 📌 aplicar filtros
   const filteredData = data.filter((item) => {
     const [method, description] = item.type.split(":").map((s) => s.trim());
 
-    // filtro por type
-    if (filterType !== "all" && method !== filterType) return false;
+    // fecha
+    if (filters.fromDate && new Date(item.timestamp) < new Date(filters.fromDate)) return false;
+    if (filters.toDate && new Date(item.timestamp) > new Date(filters.toDate)) return false;
 
-    // búsqueda en campos
+    // módulos
+    if (filters.modules.length > 0 && !filters.modules.includes(item.originModule)) return false;
+
+    // tipos
+    if (filters.types.length > 0 && !filters.types.includes(method)) return false;
+
+    // búsqueda
     const searchLower = search.toLowerCase();
     return (
       item.eventId.toString().includes(searchLower) ||
-      method.toLowerCase().includes(searchLower) ||
       description.toLowerCase().includes(searchLower) ||
-      item.originModule?.toLowerCase().includes(searchLower) ||
       item.payload?.toLowerCase().includes(searchLower)
     );
   });
 
   return (
     <div className="w-full h-[90vh] overflow-y-auto rounded-2xl p-4">
-      {/* 🔎 Barra de búsqueda y filtro */}
+      {/* 🔎 Barra de búsqueda y botón de filtros */}
       <div className="flex items-center gap-4 mb-4">
         <input
           type="text"
@@ -88,18 +78,12 @@ export default function TableComponent({ endpoint }) {
           onChange={(e) => setSearch(e.target.value)}
           className="flex-1 p-2 rounded-lg bg-[#2d2d2d] text-white"
         />
-        <select
-          value={filterType}
-          onChange={(e) => setFilterType(e.target.value)}
-          className="p-2 rounded-lg bg-[#2d2d2d] text-white"
+        <button
+          onClick={() => setShowFilterModal(true)}
+          className="p-2 rounded-lg bg-[#2d2d2d] hover:bg-[#3a3a3a]"
         >
-          <option value="all">Todos</option>
-          {uniqueTypes.map((type) => (
-            <option key={type} value={type}>
-              {type}
-            </option>
-          ))}
-        </select>
+          <Filter className="w-5 h-5 text-white" />
+        </button>
       </div>
 
       {/* 📋 Tabla */}
@@ -115,11 +99,11 @@ export default function TableComponent({ endpoint }) {
           </tr>
         </thead>
         <tbody>
-          {filteredData.slice().reverse().map((item) => {
+          {filteredData.slice().reverse().map((item, index) => {
             const [method, description] = item.type.split(":").map((s) => s.trim());
             return (
               <tr
-                key={item.id}
+                key={index}
                 className="border-b border-gray-700 hover:bg-[#242424]"
               >
                 <td className="px-4 py-2">{item.eventId}</td>
@@ -139,11 +123,22 @@ export default function TableComponent({ endpoint }) {
         </tbody>
       </table>
 
-      {/* Modal */}
+      {/* Modal Payload */}
       {selectedPayload && (
         <PayloadModal
           payload={selectedPayload}
           onClose={() => setSelectedPayload(null)}
+        />
+      )}
+
+      {/* Modal Filtros */}
+      {showFilterModal && (
+        <FilterModal
+          onClose={() => setShowFilterModal(false)}
+          onApply={setFilters}
+          originModules={uniqueModules}
+          eventTypes={uniqueTypes}
+          initialFilters={filters}
         />
       )}
     </div>
