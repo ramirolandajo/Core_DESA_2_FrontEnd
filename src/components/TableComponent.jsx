@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import api from "../api/api";
 import PayloadModal from "./PayloadModal";
 import FilterModal from "./FilterModal";
-import { Filter } from "lucide-react"; // ícono de filtro
+import { Filter, RotateCw } from "lucide-react"; // ícono de filtro y recarga
 
 export default function TableComponent({ endpoint }) {
   const [data, setData] = useState([]);
@@ -21,9 +21,18 @@ export default function TableComponent({ endpoint }) {
 
   const fetchData = async (endpoint) => {
     const res = await api.get(`/core/${endpoint}`);
-    console.log(res.data)
+    console.log(res.data);
     setAllData(res.data);
-    setData(res.data);
+
+    // Reiniciamos la lista visible
+    setData([]);
+
+    // Función para agregar elementos con delay
+    for (let i = 0; i < res.data.length; i++) {
+      setData((prev) => [...prev, res.data[i]]);
+      // delay de 0ms, pero permite que React renderice
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    }
   };
 
   useEffect(() => {
@@ -69,8 +78,8 @@ export default function TableComponent({ endpoint }) {
 
   return (
     <div className="w-full h-[90vh] overflow-y-auto rounded-2xl p-4">
-      {/* 🔎 Barra de búsqueda y botón de filtros */}
-      <div className="flex items-center gap-4 mb-4">
+      {/* 🔎 Barra de búsqueda, botón recarga y botón de filtros */}
+      <div className="flex items-center gap-2 mb-4">
         <input
           type="text"
           placeholder="Buscar..."
@@ -78,6 +87,14 @@ export default function TableComponent({ endpoint }) {
           onChange={(e) => setSearch(e.target.value)}
           className="flex-1 p-2 rounded-lg bg-[#2d2d2d] text-white"
         />
+        {/* Botón de recarga */}
+        <button
+          onClick={() => fetchData(endpoint)}
+          className="p-2 rounded-lg bg-[#2d2d2d] hover:bg-[#3a3a3a]"
+        >
+          <RotateCw className="w-5 h-5 text-white" />
+        </button>
+        {/* Botón de filtros */}
         <button
           onClick={() => setShowFilterModal(true)}
           className="p-2 rounded-lg bg-[#2d2d2d] hover:bg-[#3a3a3a]"
