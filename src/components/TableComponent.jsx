@@ -107,12 +107,12 @@ export default function TableComponent({ endpoint }) {
       <table className="w-full text-sm text-left text-gray-300">
         <thead className="sticky top-0 bg-[#2d2d2d] text-white uppercase text-xs">
           <tr>
-            <th className="px-4 py-2">EventId</th>
-            <th className="px-4 py-2">Type</th>
-            <th className="px-4 py-2">Description</th>
+            <th className="px-4 py-2">ID Evento</th>
+            <th className="px-4 py-2">Tipo</th>
+            <th className="px-4 py-2">Descripción</th>
             <th className="px-4 py-2">Payload</th>
-            <th className="px-4 py-2">Origin</th>
-            <th className="px-4 py-2">Timestamp</th>
+            <th className="px-4 py-2">Origen</th>
+            <th className="px-4 py-2">Fecha y Hora</th>
           </tr>
         </thead>
         <tbody>

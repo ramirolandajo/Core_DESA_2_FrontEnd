@@ -83,7 +83,7 @@ export default function FilterModal({
 
                 {/* OriginModule */}
                 <div className="mb-4">
-                    <h3 className="font-medium mb-2">OriginModule</h3>
+                    <h3 className="font-medium mb-2">Módulo de origen</h3>
                     <div className="flex flex-wrap gap-2">
                         {originModules.map((mod) => (
                             <button
@@ -108,7 +108,7 @@ export default function FilterModal({
 
                 {/* Type */}
                 <div className="mb-4">
-                    <h3 className="font-medium mb-2">Type</h3>
+                    <h3 className="font-medium mb-2">Tipo</h3>
                     <div className="flex flex-wrap gap-2">
                         {eventTypes.map((t) => (
                             <button
