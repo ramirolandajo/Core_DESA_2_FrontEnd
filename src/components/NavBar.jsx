@@ -21,7 +21,7 @@ export default function NavBar() {
             isActive("/") ? "bg-[#242424]" : "hover:bg-[#242424]"
           }`}
         >
-          🌱 Alive
+          🌱 Vivos
         </Link>
 
         <Link
@@ -30,7 +30,7 @@ export default function NavBar() {
             isActive("/retries") ? "bg-[#242424]" : "hover:bg-[#242424]"
           }`}
         >
-          🔄 Retries
+          🔄 Reintentos
         </Link>
 
         <Link
@@ -39,7 +39,7 @@ export default function NavBar() {
             isActive("/dead") ? "bg-[#242424]" : "hover:bg-[#242424]"
           }`}
         >
-          🧟 Dead
+          🧟 Muertos
         </Link>
       </div>
     </nav>
