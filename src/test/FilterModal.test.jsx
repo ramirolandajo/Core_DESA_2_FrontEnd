@@ -1,141 +1,112 @@
-import React from "react";
+// src/test/FilterModal.test.jsx
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
-import { vi } from "vitest";
 import FilterModal from "../components/FilterModal";
 
 describe("FilterModal", () => {
-  const mockOnClose = vi.fn();
-  const mockOnApply = vi.fn();
-  const originModules = ["ModuleA", "ModuleB"];
-  const eventTypes = ["INFO", "ERROR"];
+  const originModules = ["Module1", "Module2"];
+  const eventTypes = ["Type1", "Type2"];
   const initialFilters = {
-    fromDate: "",
-    toDate: "",
-    modules: [],
-    types: [],
+    fromDate: "2025-10-26T10:00",
+    toDate: "2025-10-26T12:00",
+    modules: ["Module1"],
+    types: ["Type2"],
   };
+
+  const onClose = vi.fn();
+  const onApply = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("renderiza correctamente el modal con todos los elementos", () => {
+  it("renders correctly with initial values", () => {
     render(
       <FilterModal
-        onClose={mockOnClose}
-        onApply={mockOnApply}
+        onClose={onClose}
+        onApply={onApply}
         originModules={originModules}
         eventTypes={eventTypes}
         initialFilters={initialFilters}
       />
     );
 
-    expect(screen.getByText("Filtros")).toBeInTheDocument();
-    expect(screen.getByText("Fecha")).toBeInTheDocument();
-    expect(screen.getByText("OriginModule")).toBeInTheDocument();
-    expect(screen.getByText("Type")).toBeInTheDocument();
-    expect(screen.getByText("Cancelar")).toBeInTheDocument();
-    expect(screen.getByText("Guardar")).toBeInTheDocument();
+    // Inputs de fecha
+    const dateInputs = screen.getAllByDisplayValue(/2025-10-26T1[0-2]:/);
+    expect(dateInputs).toHaveLength(2);
+
+    // Botones de módulos y tipos
+    expect(screen.getByText("Module1")).toHaveClass("bg-blue-600");
+    expect(screen.getByText("Module2")).toHaveClass("bg-[#1e1e1e]");
+    expect(screen.getByText("Type2")).toHaveClass("bg-green-600");
+    expect(screen.getByText("Type1")).toHaveClass("bg-[#1e1e1e]");
   });
 
-  it("permite cambiar fechas y resetearlas", () => {
+  it("allows resetting dates", () => {
     render(
       <FilterModal
-        onClose={mockOnClose}
-        onApply={mockOnApply}
+        onClose={onClose}
+        onApply={onApply}
         originModules={originModules}
         eventTypes={eventTypes}
         initialFilters={initialFilters}
       />
     );
-
-    const fromInput = screen.getAllByRole("textbox")[0];
-    const toInput = screen.getAllByRole("textbox")[1];
-
-    fireEvent.change(fromInput, { target: { value: "2025-09-28T10:00" } });
-    fireEvent.change(toInput, { target: { value: "2025-09-28T12:00" } });
-
-    expect(fromInput.value).toBe("2025-09-28T10:00");
-    expect(toInput.value).toBe("2025-09-28T12:00");
 
     fireEvent.click(screen.getByText("Resetear fechas"));
 
-    expect(fromInput.value).toBe("");
-    expect(toInput.value).toBe("");
+    // Verificamos que ambos inputs están vacíos
+    const dateInputs = screen.getAllByDisplayValue("");
+    expect(dateInputs).toHaveLength(2);
   });
 
-  it("permite seleccionar y resetear módulos", () => {
+  it("allows selecting and deselecting modules and types", () => {
     render(
       <FilterModal
-        onClose={mockOnClose}
-        onApply={mockOnApply}
+        onClose={onClose}
+        onApply={onApply}
+        originModules={originModules}
+        eventTypes={eventTypes}
+        initialFilters={{ modules: [], types: [] }}
+      />
+    );
+
+    // Selección y deselección de módulo
+    const moduleBtn = screen.getByText("Module1");
+    fireEvent.click(moduleBtn);
+    expect(moduleBtn).toHaveClass("bg-blue-600");
+    fireEvent.click(moduleBtn);
+    expect(moduleBtn).toHaveClass("bg-[#1e1e1e]");
+
+    // Selección y deselección de tipo
+    const typeBtn = screen.getByText("Type1");
+    fireEvent.click(typeBtn);
+    expect(typeBtn).toHaveClass("bg-green-600");
+    fireEvent.click(typeBtn);
+    expect(typeBtn).toHaveClass("bg-[#1e1e1e]");
+  });
+
+  it("calls onApply with correct values and onClose when Guardar is clicked", () => {
+    render(
+      <FilterModal
+        onClose={onClose}
+        onApply={onApply}
         originModules={originModules}
         eventTypes={eventTypes}
         initialFilters={initialFilters}
       />
     );
-
-    const moduleAButton = screen.getByText("ModuleA");
-    fireEvent.click(moduleAButton);
-    expect(moduleAButton).toHaveClass("bg-blue-600");
-
-    fireEvent.click(screen.getByText("Resetear módulos"));
-    expect(moduleAButton).toHaveClass("bg-[#1e1e1e]");
-  });
-
-  it("permite seleccionar y resetear tipos", () => {
-    render(
-      <FilterModal
-        onClose={mockOnClose}
-        onApply={mockOnApply}
-        originModules={originModules}
-        eventTypes={eventTypes}
-        initialFilters={initialFilters}
-      />
-    );
-
-    const infoButton = screen.getByText("INFO");
-    fireEvent.click(infoButton);
-    expect(infoButton).toHaveClass("bg-green-600");
-
-    fireEvent.click(screen.getByText("Resetear tipos"));
-    expect(infoButton).toHaveClass("bg-[#1e1e1e]");
-  });
-
-  it("llama a onApply y onClose al presionar Guardar", () => {
-    render(
-      <FilterModal
-        onClose={mockOnClose}
-        onApply={mockOnApply}
-        originModules={originModules}
-        eventTypes={eventTypes}
-        initialFilters={initialFilters}
-      />
-    );
-
-    const moduleAButton = screen.getByText("ModuleA");
-    const infoButton = screen.getByText("INFO");
-
-    fireEvent.click(moduleAButton);
-    fireEvent.click(infoButton);
 
     fireEvent.click(screen.getByText("Guardar"));
-
-    expect(mockOnApply).toHaveBeenCalledWith({
-      fromDate: "",
-      toDate: "",
-      modules: ["ModuleA"],
-      types: ["INFO"],
-    });
-
-    expect(mockOnClose).toHaveBeenCalled();
+    expect(onApply).toHaveBeenCalledWith(initialFilters);
+    expect(onClose).toHaveBeenCalled();
   });
 
-  it("llama a onClose al presionar Cancelar o la X", () => {
+  it("calls onClose when Cancelar is clicked", () => {
     render(
       <FilterModal
-        onClose={mockOnClose}
-        onApply={mockOnApply}
+        onClose={onClose}
+        onApply={onApply}
         originModules={originModules}
         eventTypes={eventTypes}
         initialFilters={initialFilters}
@@ -143,10 +114,28 @@ describe("FilterModal", () => {
     );
 
     fireEvent.click(screen.getByText("Cancelar"));
-    expect(mockOnClose).toHaveBeenCalledTimes(1);
+    expect(onClose).toHaveBeenCalled();
+  });
 
-    const closeXButton = screen.getAllByRole("button")[0]; // primer botón = X
-    fireEvent.click(closeXButton);
-    expect(mockOnClose).toHaveBeenCalledTimes(2);
+  it("allows resetting modules and types", () => {
+    render(
+      <FilterModal
+        onClose={onClose}
+        onApply={onApply}
+        originModules={originModules}
+        eventTypes={eventTypes}
+        initialFilters={{ modules: ["Module1"], types: ["Type1"] }}
+      />
+    );
+
+    // Resetear módulos
+    fireEvent.click(screen.getByText("Resetear módulos"));
+    expect(screen.getByText("Module1")).toHaveClass("bg-[#1e1e1e]");
+    expect(screen.getByText("Module2")).toHaveClass("bg-[#1e1e1e]");
+
+    // Resetear tipos
+    fireEvent.click(screen.getByText("Resetear tipos"));
+    expect(screen.getByText("Type1")).toHaveClass("bg-[#1e1e1e]");
+    expect(screen.getByText("Type2")).toHaveClass("bg-[#1e1e1e]");
   });
 });

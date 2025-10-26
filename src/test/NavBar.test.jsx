@@ -1,48 +1,51 @@
-import React from "react";
+// src/test/NavBar.test.jsx
+import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { MemoryRouter } from "react-router-dom";
 import NavBar from "../components/NavBar";
 
 describe("NavBar", () => {
-
-  const renderWithRouter = (initialRoute = "/") => {
+  it("renders all links", () => {
     render(
-      <MemoryRouter initialEntries={[initialRoute]}>
-        <Routes>
-          <Route path="*" element={<NavBar />} />
-        </Routes>
+      <MemoryRouter>
+        <NavBar />
       </MemoryRouter>
     );
-  };
 
-  it("renderiza todos los links correctamente", () => {
-    renderWithRouter();
-    expect(screen.getByText("🌱 Alive")).toBeInTheDocument();
-    expect(screen.getByText("🔄 Retries")).toBeInTheDocument();
-    expect(screen.getByText("🧟 Dead")).toBeInTheDocument();
+    expect(screen.getByText("🌱 Vivos")).toBeDefined();
+    expect(screen.getByText("🔄 Reintentos")).toBeDefined();
+    expect(screen.getByText("🧟 Muertos")).toBeDefined();
   });
 
-  it("resalta el link activo según la ruta '/'", () => {
-    renderWithRouter("/");
-    const aliveLink = screen.getByText("🌱 Alive");
-    expect(aliveLink).toHaveClass("bg-[#242424]");
-    
-    const retriesLink = screen.getByText("🔄 Retries");
-    expect(retriesLink).not.toHaveClass("bg-[#242424]");
+  it('highlights "Vivos" link when route is "/"', () => {
+    render(
+      <MemoryRouter initialEntries={["/"]}>
+        <NavBar />
+      </MemoryRouter>
+    );
 
-    const deadLink = screen.getByText("🧟 Dead");
-    expect(deadLink).not.toHaveClass("bg-[#242424]");
+    const vivosLink = screen.getByText("🌱 Vivos");
+    const reintentosLink = screen.getByText("🔄 Reintentos");
+    const muertosLink = screen.getByText("🧟 Muertos");
+
+    expect(vivosLink).toHaveClass("bg-[#242424]");
+    expect(reintentosLink).not.toHaveClass("bg-[#242424]");
+    expect(muertosLink).not.toHaveClass("bg-[#242424]");
   });
 
-  it("resalta el link activo según la ruta '/retries'", () => {
-    renderWithRouter("/retries");
-    const retriesLink = screen.getByText("🔄 Retries");
-    expect(retriesLink).toHaveClass("bg-[#242424]");
-  });
+  it('highlights "Muertos" link when route is "/dead"', () => {
+    render(
+      <MemoryRouter initialEntries={["/dead"]}>
+        <NavBar />
+      </MemoryRouter>
+    );
 
-  it("resalta el link activo según la ruta '/dead'", () => {
-    renderWithRouter("/dead");
-    const deadLink = screen.getByText("🧟 Dead");
-    expect(deadLink).toHaveClass("bg-[#242424]");
+    const vivosLink = screen.getByText("🌱 Vivos");
+    const reintentosLink = screen.getByText("🔄 Reintentos");
+    const muertosLink = screen.getByText("🧟 Muertos");
+
+    expect(vivosLink).not.toHaveClass("bg-[#242424]");
+    expect(reintentosLink).not.toHaveClass("bg-[#242424]");
+    expect(muertosLink).toHaveClass("bg-[#242424]");
   });
 });

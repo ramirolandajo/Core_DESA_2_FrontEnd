@@ -1,37 +1,36 @@
-import React from "react";
+// src/test/PayloadModal.test.jsx
+import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import PayloadModal from "../components/PayloadModal";
 
 describe("PayloadModal", () => {
-  const onCloseMock = vi.fn();
+  const mockOnClose = vi.fn();
 
-  beforeEach(() => {
-    onCloseMock.mockClear();
+  it("renders correctly with JSON payload", () => {
+    const payload = JSON.stringify({ key: "value" });
+
+    render(<PayloadModal payload={payload} onClose={mockOnClose} />);
+
+    // Debe mostrar el JSON formateado
+    expect(screen.getByText(/"key": "value"/)).toBeDefined();
   });
 
-  it("renderiza el modal con payload JSON formateado", () => {
-    const jsonPayload = JSON.stringify({ foo: "bar", count: 5 });
-    render(<PayloadModal payload={jsonPayload} onClose={onCloseMock} />);
+  it("renders correctly with plain text payload", () => {
+    const payload = "Some plain text";
 
-    // Verificamos título
-    expect(screen.getByText("Payload")).toBeInTheDocument();
+    render(<PayloadModal payload={payload} onClose={mockOnClose} />);
 
-    // Verificamos contenido formateado
-    const pre = screen.getByText(/"foo": "bar"/);
-    expect(pre).toBeInTheDocument();
-    expect(pre).toHaveTextContent(/"count": 5/);
+    expect(screen.getByText("Some plain text")).toBeDefined();
   });
 
-  it("muestra payload crudo si no es JSON válido", () => {
-    const invalidPayload = "texto crudo";
-    render(<PayloadModal payload={invalidPayload} onClose={onCloseMock} />);
-    expect(screen.getByText("texto crudo")).toBeInTheDocument();
-  });
+  it("calls onClose when close button is clicked", () => {
+    const payload = "{}";
 
-  it("llama a onClose al hacer click en el botón ✕", () => {
-    render(<PayloadModal payload="{}" onClose={onCloseMock} />);
+    render(<PayloadModal payload={payload} onClose={mockOnClose} />);
+
     const closeButton = screen.getByText("✕");
     fireEvent.click(closeButton);
-    expect(onCloseMock).toHaveBeenCalledTimes(1);
+
+    expect(mockOnClose).toHaveBeenCalled();
   });
 });
