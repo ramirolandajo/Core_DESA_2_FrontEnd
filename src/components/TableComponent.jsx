@@ -25,14 +25,7 @@ export default function TableComponent({ endpoint }) {
     setAllData(res.data);
 
     // Reiniciamos la lista visible
-    setData([]);
-
-    // Función para agregar elementos con delay
-    for (let i = 0; i < res.data.length; i++) {
-      setData((prev) => [...prev, res.data[i]]);
-      // delay de 0ms, pero permite que React renderice
-      await new Promise((resolve) => setTimeout(resolve, 10));
-    }
+    setData(res.data);
   };
 
   useEffect(() => {
@@ -71,7 +64,7 @@ export default function TableComponent({ endpoint }) {
     const searchLower = search.toLowerCase();
     return (
       item.eventId.toString().includes(searchLower) ||
-      description.toLowerCase().includes(searchLower) ||
+      description?.toLowerCase()?.includes(searchLower) ||
       item.payload?.toLowerCase().includes(searchLower)
     );
   });
