@@ -21,7 +21,6 @@ export default function TableComponent({ endpoint }) {
 
   const fetchData = async (endpoint) => {
     const res = await api.get(`/core/${endpoint}`);
-    console.log(res.data);
     setAllData(res.data);
 
     // Reiniciamos la lista visible
